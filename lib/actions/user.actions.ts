@@ -58,8 +58,13 @@ export const createAccount = async ({
     return parseStringify({ accountId: session.userId });
   } catch (error) {
     console.error("=== Error in createAccount ===");
-    console.error("Error type:", error.constructor.name);
-    console.error("Error message:", error.message);
+    if (error instanceof Error) {
+      console.error("Error type:", error.constructor.name);
+      console.error("Error message:", error.message);
+    } else {
+      console.error("Error type: unknown");
+      console.error("Error message: unknown");
+    }
     console.error("Full error:", error);
     return null;
   }
