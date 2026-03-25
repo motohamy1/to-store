@@ -185,7 +185,7 @@ export const constructDownloadUrl = (bucketFileId: string) => {
 // DASHBOARD UTILS
 interface SpaceUsage {
   size: number;
-  latestDate: number;
+  latestDate: string;
 }
 
 interface TotalSpace {
@@ -216,7 +216,8 @@ export const getUsageSummary = (totalSpace: TotalSpace) => {
       title: "Media",
       size: totalSpace.video.size + totalSpace.audio.size,
       latestDate:
-        totalSpace.video.latestDate > totalSpace.audio.latestDate
+        new Date(totalSpace.video.latestDate) >
+        new Date(totalSpace.audio.latestDate)
           ? totalSpace.video.latestDate
           : totalSpace.audio.latestDate,
       icon: "/assets/icons/file-video-light.svg",
