@@ -1,0 +1,11 @@
+{
+  "yaml.schemas": {
+    "file:///home/dr-tohamy/.var/app/com.visualstudio.code/data/vscode/extensions/continue.continue-1.2.16-linux-x64/config-yaml-schema.json": [
+      ".continue/**/*.yaml"
+    ],
+    "file:///home/dr-tohamy/.var/app/com.visualstudio.code/data/vscode/extensions/continue.continue-1.2.17-linux-x64/config-yaml-schema.json": [
+      ".continue/**/*.yaml",
+      "file:///home/dr-tohamy/.continue/config.yaml"
+    ]
+  }
+}

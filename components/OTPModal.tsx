@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  // AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   InputOTP,
@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { verifySecret, sendEmailOTP } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
 
-function OtpModel({ accountId, email }: { accountId: string; email: string }) {
+function OtpModal({ accountId, email }: { accountId: string; email: string }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [password, setPassword] = useState("");
@@ -113,4 +113,4 @@ function OtpModel({ accountId, email }: { accountId: string; email: string }) {
   );
 }
 
-export default OtpModel;
+export default OtpModal;
