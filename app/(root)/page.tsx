@@ -13,11 +13,8 @@ import { getCurrentUser } from "@/lib/actions/user.actions";
 
 const Dashboard = async () => {
   const currentUser = await getCurrentUser();
-  console.log("Dashboard - currentUser:", currentUser);
 
   if (!currentUser) return null;
-
-  console.log("Dashboard - accountId:", currentUser.accountId);
 
   // Parallel requests
   const [files, totalSpace] = await Promise.all([

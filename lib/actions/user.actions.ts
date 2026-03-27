@@ -144,7 +144,6 @@ export const getCurrentUser = async () => {
     const { databases } = await createAdminClient();
 
     const result = await account.get();
-    console.log("getCurrentUser - account result:", result.$id);
 
     const user = await databases.listDocuments(
       appwriteConfig.database,
@@ -152,12 +151,11 @@ export const getCurrentUser = async () => {
       [Query.equal("accountId", result.$id)],
     );
 
-    console.log("getCurrentUser - user found:", user.total);
     if (user.total <= 0) return null;
 
     return parseStringify(user.documents[0]);
   } catch (error) {
-    console.log("getCurrentUser error:", error);
+    handleError(error, "Failed to get current user");
   }
 };
 
