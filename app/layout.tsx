@@ -1,27 +1,16 @@
 import type { Metadata } from "next";
-import {Poppins} from 'next/font/google'
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
-// const geistSans = localFont({
-//   src: './fonts/GeistVF.woff',
-//   variable: "--font-geist-sans",
-//   weight: "100 900"
-// });
-
-// const geistMono = localFont({
-//   src: './fonts/GeistMonoVF.woff',
-//   variable: "--font-geist-mono",
-//   weight: "100 900"
-// });
-
 const poppins = Poppins({
-  subsets: ['latin'],
-  weight: '400'
-})
+  subsets: ["latin"],
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "Storage App",
-  description: "unique way to store",
+  description:
+    "Secure, Modern, Scalable, Reliable way to Store & Manage your data in the cloud",
 };
 
 export default function RootLayout({
@@ -31,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.className} antialiased`}
-      >
+      <body className={`${poppins.className} antialiased bg-light-400`}>
         {children}
       </body>
     </html>

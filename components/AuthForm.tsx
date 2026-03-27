@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,14 +18,14 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createAccount } from "@/lib/actions/user.actions";
-import OtpModal from "@/components/OTPModal";
+import { signUp, signIn } from "@/lib/actions/user.actions";
 
 type FormType = "sign-in" | "sign-up";
 
 const authFormSchema = (formType: FormType) => {
   return z.object({
     email: z.string().email(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     fullName:
       formType === "sign-up"
         ? z.string().min(2).max(50)
@@ -33,9 +34,9 @@ const authFormSchema = (formType: FormType) => {
 };
 
 const AuthForm = ({ type }: { type: FormType }) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [accountId, setAccountId] = useState(null);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,6 +44,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
     defaultValues: {
       fullName: "",
       email: "",
+      password: "",
     },
   });
 
@@ -51,19 +53,33 @@ const AuthForm = ({ type }: { type: FormType }) => {
     setErrorMessage("");
 
     try {
-      const user = await createAccount({
-        fullName: values.fullName || "",
-        email: values.email,
-      });
+      if (type === "sign-in") {
+        const result = await signIn({
+          email: values.email,
+          password: values.password,
+        });
 
-      if (user?.accountId) {
-        setAccountId(user.accountId);
+        if (result?.sessionId) {
+          router.push("/");
+        }
       } else {
-        throw new Error("Failed to create account");
+        const result = await signUp({
+          fullName: values.fullName || "",
+          email: values.email,
+          password: values.password,
+        });
+
+        if (result?.user) {
+          router.push("/");
+        }
       }
     } catch (error) {
-      console.error("Account creation error:", error);
-      setErrorMessage("Failed to create account. Please try again.");
+      console.error("Auth error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Authentication failed. Please try again.";
+      setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
@@ -122,6 +138,29 @@ const AuthForm = ({ type }: { type: FormType }) => {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <div className="shad-form-item">
+                  <FormLabel className="shad-form-label">Password</FormLabel>
+
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      className="shad-input"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+
+                <FormMessage className="shad-form-message" />
+              </FormItem>
+            )}
+          />
+
           <Button
             type="submit"
             className="form-submit-button"
@@ -158,10 +197,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
-
-      {accountId && (
-        <OtpModal email={form.getValues("email")} accountId={accountId} />
-      )}
     </>
   );
 };

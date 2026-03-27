@@ -11,13 +11,18 @@ import { redirect } from "next/navigation";
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
 
-  const result = await databases.listDocuments(
-    appwriteConfig.database,
-    appwriteConfig.usersCollection,
-    [Query.equal("email", [email])],
-  );
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.database,
+      appwriteConfig.usersCollection,
+      [Query.equal("email", [email])],
+    );
 
-  return result.total > 0 ? result.documents[0] : null;
+    return result.total > 0 ? result.documents[0] : null;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
 };
 
 const handleError = (error: unknown, message: string) => {
@@ -25,60 +30,91 @@ const handleError = (error: unknown, message: string) => {
   throw error;
 };
 
-export const sendEmailOTP = async ({ email }: { email: string }) => {
-  const { account } = await createAdminClient();
-
-  try {
-    const session = await account.createEmailToken(ID.unique(), email);
-
-    return session.userId;
-  } catch (error) {
-    handleError(error, "Failed to send email OTP");
-  }
-};
-
-export const createAccount = async ({
+export const signUp = async ({
   fullName,
   email,
+  password,
 }: {
   fullName: string;
   email: string;
+  password: string;
 }) => {
-  const existingUser = await getUserByEmail(email);
-
-  const accountId = await sendEmailOTP({ email });
-  if (!accountId) throw new Error("Failed to send an OTP");
-
-  if (!existingUser) {
+  try {
+    const { account } = await createAdminClient();
     const { databases } = await createAdminClient();
 
-    await databases.createDocument(
-      appwriteConfig.database,
-      appwriteConfig.usersCollection,
-      ID.unique(),
-      {
-        fullName,
-        email,
-        avatar: avatarPlaceholderUrl,
-        accountId,
-      },
-    );
-  }
+    let userId: string;
 
-  return parseStringify({ accountId });
+    try {
+      const user = await account.create(ID.unique(), email, password, fullName);
+      userId = user.$id;
+    } catch (error: unknown) {
+      const errorObj = error as { type?: string; message?: string };
+      if (errorObj?.type === "user_already_exists") {
+        try {
+          const session = await account.createEmailPasswordSession(
+            email,
+            password,
+          );
+
+          (await cookies()).set("appwrite-session", session.secret, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+            secure: true,
+          });
+
+          return parseStringify({ user: { email }, alreadyExisted: true });
+        } catch {
+          throw new Error(
+            "An account with this email already exists. Please sign in with your existing password.",
+          );
+        }
+      }
+      throw error;
+    }
+
+    const session = await account.createEmailPasswordSession(email, password);
+
+    (await cookies()).set("appwrite-session", session.secret, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+    });
+
+    const existingUser = await getUserByEmail(email);
+    if (!existingUser) {
+      await databases.createDocument(
+        appwriteConfig.database,
+        appwriteConfig.usersCollection,
+        ID.unique(),
+        {
+          fullName,
+          email,
+          avatar: avatarPlaceholderUrl,
+          accountId: userId,
+        },
+      );
+    }
+
+    return parseStringify({ user: { id: userId, email, fullName } });
+  } catch (error) {
+    handleError(error, "Failed to sign up");
+  }
 };
 
-export const verifySecret = async ({
-  accountId,
+export const signIn = async ({
+  email,
   password,
 }: {
-  accountId: string;
+  email: string;
   password: string;
 }) => {
   try {
     const { account } = await createAdminClient();
 
-    const session = await account.createSession(accountId, password);
+    const session = await account.createEmailPasswordSession(email, password);
 
     (await cookies()).set("appwrite-session", session.secret, {
       path: "/",
@@ -88,16 +124,27 @@ export const verifySecret = async ({
     });
 
     return parseStringify({ sessionId: session.$id });
-  } catch (error) {
-    handleError(error, "Failed to verify OTP");
+  } catch (error: unknown) {
+    const errorObj = error as { type?: string; code?: number };
+    if (
+      errorObj?.type === "user_invalid_credentials" ||
+      errorObj?.code === 401
+    ) {
+      throw new Error(
+        "Invalid email or password. Please check your credentials.",
+      );
+    }
+    handleError(error, "Failed to sign in");
   }
 };
 
 export const getCurrentUser = async () => {
   try {
-    const { databases, account } = await createSessionClient();
+    const { account } = await createSessionClient();
+    const { databases } = await createAdminClient();
 
     const result = await account.get();
+    console.log("getCurrentUser - account result:", result.$id);
 
     const user = await databases.listDocuments(
       appwriteConfig.database,
@@ -105,11 +152,12 @@ export const getCurrentUser = async () => {
       [Query.equal("accountId", result.$id)],
     );
 
+    console.log("getCurrentUser - user found:", user.total);
     if (user.total <= 0) return null;
 
     return parseStringify(user.documents[0]);
   } catch (error) {
-    console.log(error);
+    console.log("getCurrentUser error:", error);
   }
 };
 
@@ -123,21 +171,5 @@ export const signOutUser = async () => {
     handleError(error, "Failed to sign out user");
   } finally {
     redirect("/sign-in");
-  }
-};
-
-export const signInUser = async ({ email }: { email: string }) => {
-  try {
-    const existingUser = await getUserByEmail(email);
-
-    // User exists, send OTP
-    if (existingUser) {
-      await sendEmailOTP({ email });
-      return parseStringify({ accountId: existingUser.accountId });
-    }
-
-    return parseStringify({ accountId: null, error: "User not found" });
-  } catch (error) {
-    handleError(error, "Failed to sign in user");
   }
 };

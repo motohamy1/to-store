@@ -36,10 +36,8 @@ export const uploadFile = async ({
       url: constructFileUrl(bucketFile.$id),
       extension: getFileType(bucketFile.name).extension,
       size: bucketFile.sizeOriginal,
-      owner: ownerId,
       accountId,
-      users: [],
-      bucketFileId: bucketFile.$id,
+      bucketField: bucketFile.$id,
     };
 
     const newFile = await databases
@@ -62,18 +60,13 @@ export const uploadFile = async ({
 };
 
 const createQueries = (
-  currentUser: Models.Document,
+  accountId: string,
   types: string[],
   searchText: string,
   sort: string,
   limit?: number,
 ) => {
-  const queries = [
-    Query.or([
-      Query.equal("owner", [currentUser.$id]),
-      Query.contains("users", [currentUser.email]),
-    ]),
-  ];
+  const queries: any[] = [Query.equal("accountId", [accountId])];
 
   if (types.length > 0) queries.push(Query.equal("type", types));
   if (searchText) queries.push(Query.contains("name", searchText));
@@ -95,15 +88,16 @@ export const getFiles = async ({
   searchText = "",
   sort = "$createdAt-desc",
   limit,
-}: GetFilesProps) => {
+  accountId,
+}: GetFilesProps & { accountId: string }) => {
   const { databases } = await createAdminClient();
 
+  if (!accountId) {
+    throw new Error("accountId is required");
+  }
+
   try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) throw new Error("User not found");
-
-    const queries = createQueries(currentUser, types, searchText, sort, limit);
+    const queries = createQueries(accountId, types, searchText, sort, limit);
 
     const files = await databases.listDocuments(
       appwriteConfig.database,
@@ -111,9 +105,9 @@ export const getFiles = async ({
       queries,
     );
 
-    console.log({ files });
     return parseStringify(files);
   } catch (error) {
+    console.error("getFiles error:", { accountId, error });
     handleError(error, "Failed to get files");
   }
 };
@@ -170,7 +164,7 @@ export const updateFileUsers = async ({
 
 export const deleteFile = async ({
   fileId,
-  bucketFileId,
+  bucketField,
   path,
 }: DeleteFileProps) => {
   const { databases, storage } = await createAdminClient();
@@ -183,7 +177,7 @@ export const deleteFile = async ({
     );
 
     if (deletedFile) {
-      await storage.deleteFile(appwriteConfig.bucket, bucketFileId);
+      await storage.deleteFile(appwriteConfig.bucket, bucketField);
     }
 
     revalidatePath(path);
@@ -194,16 +188,14 @@ export const deleteFile = async ({
 };
 
 // ============================== TOTAL FILE SPACE USED
-export async function getTotalSpaceUsed() {
+export async function getTotalSpaceUsed(accountId: string) {
   try {
-    const { databases } = await createSessionClient();
-    const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("User is not authenticated.");
+    const { databases } = await createAdminClient();
 
     const files = await databases.listDocuments(
       appwriteConfig.database,
       appwriteConfig.filesCollection,
-      [Query.equal("owner", [currentUser.$id])],
+      [Query.equal("accountId", [accountId])],
     );
 
     const totalSpace = {

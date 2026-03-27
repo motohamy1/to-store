@@ -7,10 +7,6 @@
     @apply scroll-smooth;
   }
 
-  body {
-    @apply bg-white text-dark-200 min-h-screen;
-  }
-
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 3px;
@@ -30,7 +26,6 @@
     background: #fa7275;
   }
 
-  /* Remove scrollbar */
   .remove-scrollbar::-webkit-scrollbar {
     width: 0px;
     height: 0px;
@@ -47,7 +42,6 @@
   }
 
   .remove-scrollbar::-webkit-scrollbar-thumb:hover {
-    /* background: #1e2238; */
     background: transparent;
   }
 
@@ -106,7 +100,7 @@
     @apply flex items-center justify-center;
   }
 
-  /* =====  SHADCN OVERRIDES */
+  /* ===== SHADCN OVERRIDES */
   .shad-no-focus {
     @apply outline-none ring-offset-transparent focus:ring-transparent focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
   }
@@ -115,7 +109,7 @@
   }
 
   .shad-form-item {
-    @apply flex h-[78px] flex-col justify-center rounded-xl border border-light-300 px-4 shadow-drop-1;
+    @apply flex h-[78px] flex-col justify-center rounded-xl border border-light-300 px-4 shadow-drop-1 bg-white;
   }
   .shad-form-label {
     @apply text-light-100 pt-2 body-2 w-full !important;
@@ -147,7 +141,7 @@
     @apply cursor-pointer !important;
   }
   .shad-dialog {
-    @apply rounded-[26px] w-[90%] max-w-[400px] px-6 py-8   !important;
+    @apply rounded-[26px] w-[90%] max-w-[400px] px-6 py-8 bg-white !important;
   }
   .shad-chart-title {
     @apply text-white !important;
@@ -164,7 +158,7 @@
     @apply invert-0 opacity-100 !important;
   }
 
-  /* =====  STYLE CLASSES */
+  /* ===== STYLE CLASSES */
 
   /* Root Layout */
   .main-content {
@@ -185,10 +179,10 @@
     @apply absolute -left-3 top-[-25px] z-10 w-[190px] object-contain !important;
   }
   .summary-type-size {
-    @apply h4 relative z-20 w-full text-right !important;
+    @apply h4 relative z-20 w-full text-right text-light-100 !important;
   }
   .summary-type-title {
-    @apply h5 relative z-20 text-center !important;
+    @apply h5 relative z-20 text-center text-light-100 !important;
   }
   .dashboard-recent-files {
     @apply h-full rounded-[20px] xl:h-[654px] custom-scrollbar overflow-auto bg-white p-5 xl:p-7 !important;
@@ -219,10 +213,13 @@
   .sort-container {
     @apply mt-5 flex items-center sm:mt-0 sm:gap-3 !important;
   }
+  .total-size-label {
+    @apply text-light-100 !important;
+  }
 
   /* ActionsDropdown */
   .rename-input-field {
-    @apply body-2 shad-no-focus h-[52px] w-full rounded-full border px-4 shadow-drop-1 !important;
+    @apply body-2 shad-no-focus h-[52px] w-full rounded-full border border-light-300 px-4 shadow-drop-1 !important;
   }
   .delete-confirmation {
     @apply text-center text-light-100 !important;
@@ -252,7 +249,7 @@
     @apply !mt-2 space-y-2 !important;
   }
   .share-input-field {
-    @apply body-2 shad-no-focus h-[52px] w-full rounded-full border px-4 shadow-drop-1 !important;
+    @apply body-2 shad-no-focus h-[52px] w-full rounded-full border border-light-300 px-4 shadow-drop-1 !important;
   }
   .share-remove-user {
     @apply rounded-full bg-transparent text-light-100 shadow-none hover:bg-transparent !important;
@@ -314,7 +311,7 @@
     @apply fixed bottom-10 right-10 z-50 flex size-full h-fit max-w-[480px] flex-col gap-3 rounded-[20px] bg-white p-7 shadow-drop-3 !important;
   }
   .uploader-preview-item {
-    @apply flex items-center justify-between  gap-3 rounded-xl p-3 shadow-drop-3 !important;
+    @apply flex items-center justify-between gap-3 rounded-xl p-3 shadow-drop-3 bg-white !important;
   }
   .preview-item-name {
     @apply subtitle-2 mb-2 line-clamp-1 max-w-[300px] !important;
@@ -360,7 +357,7 @@
 
   /* OTP Modal */
   .otp-close-button {
-    @apply absolute -right-1 -top-7 cursor-pointer sm:-right-2 sm:-top-4  !important;
+    @apply absolute -right-1 -top-7 cursor-pointer sm:-right-2 sm:-top-4 !important;
   }
 
   /* Search */
@@ -368,10 +365,10 @@
     @apply relative w-full md:max-w-[480px] !important;
   }
   .search-input-wrapper {
-    @apply flex h-[52px] flex-1 items-center gap-3 rounded-full px-4 shadow-drop-3 !important;
+    @apply flex h-[52px] flex-1 items-center gap-3 rounded-full px-4 shadow-drop-3 bg-white !important;
   }
   .search-input {
-    @apply body-2 shad-no-focus  placeholder:body-1 w-full border-none p-0 shadow-none placeholder:text-light-200 !important;
+    @apply body-2 shad-no-focus placeholder:body-1 w-full border-none p-0 shadow-none placeholder:text-light-200 !important;
   }
   .search-result {
     @apply absolute left-0 top-16 z-50 flex w-full flex-col gap-3 rounded-[20px] bg-white p-4 !important;
@@ -382,7 +379,7 @@
 
   /* Sidebar */
   .sidebar {
-    @apply remove-scrollbar hidden h-screen w-[90px] flex-col overflow-auto px-5 py-7 sm:flex lg:w-[280px] xl:w-[325px] !important;
+    @apply remove-scrollbar hidden h-screen w-[90px] flex-col overflow-auto px-5 py-7 sm:flex lg:w-[280px] xl:w-[325px] bg-white !important;
   }
   .sidebar-nav {
     @apply h5 mt-9 flex-1 gap-1 text-brand !important;

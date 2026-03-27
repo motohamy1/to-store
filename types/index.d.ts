@@ -20,7 +20,7 @@ declare interface UploadFileProps {
   path: string;
 }
 declare interface GetFilesProps {
-  types: FileType[];
+  types: string[];
   searchText?: string;
   sort?: string;
   limit?: number;
@@ -38,7 +38,7 @@ declare interface UpdateFileUsersProps {
 }
 declare interface DeleteFileProps {
   fileId: string;
-  bucketFileId: string;
+  bucketField: string;
   path: string;
 }
 
